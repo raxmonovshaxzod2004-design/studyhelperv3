@@ -42,6 +42,13 @@ WEB_APP_URL = os.getenv("WEB_APP_URL", "")
 if not WEB_APP_URL:
     print("⚠️  WEB_APP_URL is not set!") 
 
+# --- DATA STORAGE (RAILWAY VOLUME) ---
+DATA_DIR = os.getenv("DATA_DIR", ".")
+if not os.path.exists(DATA_DIR):
+    os.makedirs(DATA_DIR, exist_ok=True)
+
+DB_PATH = os.path.join(DATA_DIR, "test_bot.db")
+
 logging.basicConfig(level=logging.INFO)
 bot = Bot(token=TOKEN)
 dp = Dispatcher()
@@ -52,7 +59,7 @@ templates = Jinja2Templates(directory="templates")
 
 # --- MA'LUMOTLAR BAZASI ---
 def init_db():
-    conn = sqlite3.connect("test_bot.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute('''CREATE TABLE IF NOT EXISTS test_bases (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
