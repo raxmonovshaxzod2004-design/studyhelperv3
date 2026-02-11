@@ -132,9 +132,10 @@ def db_upsert_user(user: types.User, is_approved=0):
     
     current_approved = res[0] if res else is_approved
     
+    joined_at = datetime.now().isoformat()
     cursor.execute('''INSERT OR REPLACE INTO users (telegram_id, full_name, username, is_approved, joined_at)
                       VALUES (?, ?, ?, ?, COALESCE((SELECT joined_at FROM users WHERE telegram_id=?), ?))''',
-                   (user.id, user.full_name, user.username, current_approved, user.id, datetime.now()))
+                   (user.id, user.full_name, user.username, current_approved, user.id, joined_at))
     conn.commit()
     conn.close()
 
@@ -454,8 +455,9 @@ async def process_file(message: types.Message, state: FSMContext):
     cursor = conn.cursor()
     is_admin = 1 if message.from_user.id == ADMIN_ID else 0
     
+    created_at = datetime.now().isoformat()
     cursor.execute("INSERT INTO test_bases (name, owner_id, created_at, is_admin_base) VALUES (?, ?, ?, ?)",
-                   (subject_name, message.from_user.id, datetime.now(), is_admin))
+                   (subject_name, message.from_user.id, created_at, is_admin))
     base_id = cursor.lastrowid
     
     for t in tests:
@@ -507,7 +509,7 @@ async def list_bases(message: types.Message, state: FSMContext):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     # 3 kundan oshgan oddiy bazalarni tozalash
-    limit = datetime.now() - timedelta(days=3)
+    limit = (datetime.now() - timedelta(days=3)).isoformat()
     cursor.execute("DELETE FROM test_bases WHERE is_admin_base = 0 AND created_at < ?", (limit,))
     conn.commit()
     
