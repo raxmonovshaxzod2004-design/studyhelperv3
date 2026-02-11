@@ -41,6 +41,10 @@ PORT = int(os.getenv("PORT", 8000))
 WEB_APP_URL = os.getenv("WEB_APP_URL", "")
 if not WEB_APP_URL:
     print("⚠️  WEB_APP_URL is not set!") 
+else:
+    if not WEB_APP_URL.startswith("http"):
+        WEB_APP_URL = "https://" + WEB_APP_URL
+    WEB_APP_URL = WEB_APP_URL.rstrip("/") 
 
 # --- DATA STORAGE (RAILWAY VOLUME) ---
 DATA_DIR = os.getenv("DATA_DIR", ".")
