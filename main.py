@@ -261,8 +261,23 @@ def get_admin_content():
     auto_approve = db_get_setting("auto_approve", "0") == "1"
     status_emoji = "✅ YONIQ" if auto_approve else "🔴 O'CHIQ"
     
+    # Statistikani olish
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    cursor.execute("SELECT COUNT(*) FROM users")
+    total_users = cursor.fetchone()[0]
+    cursor.execute("SELECT COUNT(*) FROM users WHERE is_approved = 1")
+    approved_users = cursor.fetchone()[0]
+    conn.close()
+    
+    blocked_users = total_users - approved_users
+    
     text = (
         f"👨‍💼 <b>Admin Boshqaruv Tizimi</b>\n\n"
+        f"📊 <b>Statistika:</b>\n"
+        f"👥 Jami: {total_users}\n"
+        f"✅ Ruxsat: {approved_users}\n"
+        f"🚫 Bloklangan: {blocked_users}\n\n"
         f"⚙️ <b>Avto-ruxsat:</b> {status_emoji}\n"
         f"<i>Yangi foydalanuvchilar avtomatik tasdiqlansinmi?</i>"
     )
