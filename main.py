@@ -393,7 +393,7 @@ async def bulk_users_manage(call: types.CallbackQuery):
     action = call.data.replace("users_manage_", "")
     
     if action == "approve_all":
-        conn = sqlite3.connect("test_bot.db")
+        conn = sqlite3.connect(DB_PATH)
         conn.execute("UPDATE users SET is_approved = 1")
         conn.commit()
         conn.close()
@@ -401,7 +401,7 @@ async def bulk_users_manage(call: types.CallbackQuery):
         # Barchaga xabar (ixtiyoriy, hozircha o'chirib turamiz spam bo'lmasligi uchun)
         
     elif action == "revoke_all":
-        conn = sqlite3.connect("test_bot.db")
+        conn = sqlite3.connect(DB_PATH)
         conn.execute("UPDATE users SET is_approved = 0 WHERE telegram_id != ?", (ADMIN_ID,))
         conn.commit()
         conn.close()
@@ -439,7 +439,7 @@ async def process_file(message: types.Message, state: FSMContext):
         await message.answer("❌ Xatolik: ANSWER: A formati topilmadi.")
         return
 
-    conn = sqlite3.connect("test_bot.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     is_admin = 1 if message.from_user.id == ADMIN_ID else 0
     
@@ -464,7 +464,7 @@ async def search_mode(message: types.Message, state: FSMContext):
 @dp.message(BotStates.searching)
 async def searching_process(message: types.Message):
     query = message.text
-    conn = sqlite3.connect("test_bot.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT id, question_text, full_text, correct_answer FROM questions WHERE full_text LIKE ? LIMIT 15", (f'%{query}%',))
     results = cursor.fetchall()
@@ -482,7 +482,7 @@ async def searching_process(message: types.Message):
 @dp.callback_query(F.data.startswith("q_"))
 async def show_q(call: types.CallbackQuery):
     q_id = call.data.split("_")[1]
-    conn = sqlite3.connect("test_bot.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT full_text, correct_answer FROM questions WHERE id = ?", (q_id,))
     res = cursor.fetchone()
@@ -493,7 +493,7 @@ async def show_q(call: types.CallbackQuery):
 @dp.message(F.text == "📚 Mavjud bazalar")
 async def list_bases(message: types.Message, state: FSMContext):
     await state.clear()
-    conn = sqlite3.connect("test_bot.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     # 3 kundan oshgan oddiy bazalarni tozalash
     limit = datetime.now() - timedelta(days=3)
@@ -520,7 +520,7 @@ async def base_options(call: types.CallbackQuery, state: FSMContext):
     base_id = call.data.split("_")[1]
     
     # Bazani nomini olish (chiroyli ko'rinishi uchun)
-    conn = sqlite3.connect("test_bot.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT name FROM test_bases WHERE id = ?", (base_id,))
     res = cursor.fetchone()
@@ -545,7 +545,7 @@ async def base_options(call: types.CallbackQuery, state: FSMContext):
 async def search_base_callback(call: types.CallbackQuery, state: FSMContext):
     base_id = call.data.split("_")[1]
     # Bazani nomini olish
-    conn = sqlite3.connect("test_bot.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT name FROM test_bases WHERE id = ?", (base_id,))
     res = cursor.fetchone()
@@ -580,7 +580,7 @@ async def cancel_delete(call: types.CallbackQuery):
 async def delete_base_handler(call: types.CallbackQuery):
     base_id = call.data.split("_")[1]
     
-    conn = sqlite3.connect("test_bot.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     # Savollarni o'chirish
     cursor.execute("DELETE FROM questions WHERE base_id = ?", (base_id,))
@@ -594,7 +594,7 @@ async def delete_base_handler(call: types.CallbackQuery):
 @dp.message(F.text == "📝 Imtihon topshirish")
 async def start_exam_list(message: types.Message, state: FSMContext):
     await state.clear()
-    conn = sqlite3.connect("test_bot.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT id, name FROM test_bases")
     bases = cursor.fetchall()
@@ -614,7 +614,7 @@ async def start_exam_list(message: types.Message, state: FSMContext):
 @dp.message(F.text == "🧠 Yodlash rejimi")
 async def start_memorize_list(message: types.Message, state: FSMContext):
     await state.clear()
-    conn = sqlite3.connect("test_bot.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT id, name FROM test_bases")
     bases = cursor.fetchall()
@@ -661,7 +661,7 @@ async def inline_result_share(inline_query: types.InlineQuery):
         user_name = inline_query.from_user.full_name
         
         # Bazani nomini olish
-        conn = sqlite3.connect("test_bot.db")
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute("SELECT name FROM test_bases WHERE id = ?", (base_id,))
         base_res = cursor.fetchone()
@@ -726,7 +726,7 @@ async def text_fallback(message: types.Message):
         
         user_name = message.from_user.full_name
         
-        conn = sqlite3.connect("test_bot.db")
+        conn = sqlite3.connect(DB_PATH)
         cursor = conn.cursor()
         cursor.execute("SELECT name FROM test_bases WHERE id = ?", (base_id,))
         base_res = cursor.fetchone()
@@ -758,7 +758,7 @@ async def text_fallback(message: types.Message):
 
 @app.get("/get-tests")
 async def get_tests(base_id: int, mode: str = "exam"):
-    conn = sqlite3.connect("test_bot.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT full_text, correct_answer FROM questions WHERE base_id = ?", (base_id,))
     rows = cursor.fetchall()
@@ -803,7 +803,7 @@ async def get_tests(base_id: int, mode: str = "exam"):
 
 @app.get("/exam/{base_id}", response_class=HTMLResponse)
 async def exam_page(request: Request, base_id: int):
-    conn = sqlite3.connect("test_bot.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT name FROM test_bases WHERE id = ?", (base_id,))
     res = cursor.fetchone()
@@ -819,7 +819,7 @@ async def exam_page(request: Request, base_id: int):
 
 @app.get("/memorize/{base_id}", response_class=HTMLResponse)
 async def memorize_page(request: Request, base_id: int):
-    conn = sqlite3.connect("test_bot.db")
+    conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     cursor.execute("SELECT name FROM test_bases WHERE id = ?", (base_id,))
     res = cursor.fetchone()
