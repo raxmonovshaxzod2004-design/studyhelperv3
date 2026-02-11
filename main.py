@@ -323,9 +323,13 @@ async def show_users(call: types.CallbackQuery):
     users = db_get_all_users()
     kb = InlineKeyboardBuilder()
     
+    # Bulk actions in list view
+    kb.button(text="✅ Hammaga ruxsat", callback_data="users_manage_approve_all")
+    kb.button(text="🚫 Hammani bloklash", callback_data="users_manage_revoke_all")
+
     if not users:
-        await call.answer("Foydalanuvchilar yo'q")
-        return
+        # Agar userlar bo'lmasa ham bulk actionlar turgani ma'qul, yoki msg qaytarish mumkin
+        pass
 
     text = "👥 <b>Foydalanuvchilar ro'yxati:</b>\nTanlash uchun bosing:"
     
@@ -335,7 +339,7 @@ async def show_users(call: types.CallbackQuery):
         kb.button(text=f"{status} {u[1]}", callback_data=f"manage_{u[0]}")
     
     kb.button(text="🔙 Orqaga", callback_data="admin_main")
-    kb.adjust(1)
+    kb.adjust(2, 1)
     
     await call.message.edit_text(text, reply_markup=kb.as_markup(), parse_mode="HTML")
 
@@ -434,8 +438,16 @@ async def bulk_users_manage(call: types.CallbackQuery):
         conn.close()
         await call.answer("Barcha foydalanuvchilar bloklandi!", show_alert=True)
     
-    text, reply_markup = get_admin_content()
-    await call.message.edit_text(text, reply_markup=reply_markup, parse_mode="HTML")
+    # Check context: if we came from User List, refresh User List
+    msg_text = call.message.text or ""
+    if "Foydalanuvchilar ro'yxati" in msg_text:
+        await show_users(call)
+    else:
+        text, reply_markup = get_admin_content()
+        try:
+            await call.message.edit_text(text, reply_markup=reply_markup, parse_mode="HTML")
+        except:
+            pass
 
 @dp.message(F.text == "📂 Test yuklash")
 async def upload_mode(message: types.Message, state: FSMContext):
