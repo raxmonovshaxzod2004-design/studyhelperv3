@@ -723,8 +723,8 @@ async def inline_result_share(inline_query: types.InlineQuery):
             f"⏱ <b>Sarflangan vaqt:</b> {time_str}\n"
             f"----------------------------------------\n"
             f"🤖 <b>Bot orqali test ishlang:</b>\n"
-            f"👉 @TATU_UCHUN_TEST_BOT\n"
-            f"👉 @TATU_UCHUN_TEST_BOT"
+            f"👉 @study_helperv3_bot\n"
+            f"👉 @study_helperv3_bot"
         )
         
         # Natija obyekti (Maqola ko'rinishida)
@@ -894,3 +894,4 @@ if __name__ == "__main__":
         asyncio.run(run_all())
     except (KeyboardInterrupt, SystemExit):
         pass
+
