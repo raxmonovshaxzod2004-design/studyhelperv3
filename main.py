@@ -786,7 +786,7 @@ async def text_fallback(message: types.Message):
             f"⏱ <b>Sarflangan vaqt:</b> {time_str}\n"
             f"----------------------------------------\n"
             f"🤖 <b>Bot orqali test ishlang:</b>\n"
-            f"👉 @TATU_UCHUN_TEST_BOT"
+            f"👉 @study_helperv3_bot"
         )
         
         await message.answer(result_text, parse_mode="HTML")
@@ -894,4 +894,5 @@ if __name__ == "__main__":
         asyncio.run(run_all())
     except (KeyboardInterrupt, SystemExit):
         pass
+
 
